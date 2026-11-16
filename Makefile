@@ -68,7 +68,7 @@ badgelink:
 	git clone https://github.com/badgeteam/esp32-component-badgelink.git badgelink
 	cd badgelink/tools; ./install.sh
 
-APP_SLUG ?= nl.tanmatsu.sdr-dv
+APP_SLUG ?= com.github.n0p.sdr-dv
 APP_REVISION ?= 1
 
 .PHONY: install
@@ -81,20 +81,20 @@ install:
 .PHONY: install-metadata
 install-metadata:
 	cd badgelink/tools; ./badgelink.sh fs mkdir /int/apps/$(APP_SLUG) || true
-	cd badgelink/tools; for f in metadata.json icon32.png icon64.png; do \
+	cd badgelink/tools; for f in metadata.json icon16.png icon32.png icon64.png; do \
 		./badgelink.sh fs upload /int/apps/$(APP_SLUG)/$$f ../../metadata/$$f || exit 1; done
 
-# metadata/icon32.png and icon64.png from icon.png (needs ImageMagick); the
+# metadata/icon16.png, icon32.png and icon64.png from icon.png (needs ImageMagick); the
 # results are kept in the repository, so this is only for a new icon.
 .PHONY: appicon
 appicon:
 	side=$$(magick identify -format '%[fx:min(w,h)]' icon.png); \
-	for n in 32 64; do magick icon.png -gravity center -crop $${side}x$${side}+0+0 +repage \
+	for n in 16 32 64; do magick icon.png -gravity center -crop $${side}x$${side}+0+0 +repage \
 		-filter Lanczos -resize $${n}x$${n} -strip PNG24:metadata/icon$$n.png || exit 1; done
 
 .PHONY: run
 run:
-	cd badgelink/tools; ./badgelink.sh start nl.tanmatsu.sdr-dv
+	cd badgelink/tools; ./badgelink.sh start com.github.n0p.sdr-dv
 
 # Preparation
 

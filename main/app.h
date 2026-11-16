@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include "dsp.h"
 
-#define APP_VERSION "0.1.0"
+#define APP_VERSION "0.1.1"
 
 // ---- Rates ---------------------------------------------------------------------------------------
 #define RTL_RATE      1152000u  // 28.8 MHz / 25, exact

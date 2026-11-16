@@ -14,7 +14,7 @@ WFM and decodes two digital modes on the device itself:
 This is a new app, not a continuation of the "Tanmatsu SDR" app in the app store
 (`fi.oh1w.tanmatsu-sdr`): that one has no public source. It uses the same USB driver,
 [`esp-rtl-sdr`](https://github.com/hardcoreerik/esp-rtl-sdr), and installs next to it under its own
-name (`nl.tanmatsu.sdr-dv`, "SDR DMR/TETRA").
+name (`com.github.n0p.sdr-dv`, "SDR DMR/TETRA").
 
 ## Keys
 
@@ -284,8 +284,8 @@ make install && make run   # device in USB device mode (launcher: purple diamond
 
 The app is an AppFS application. Do not flash it as the main firmware.
 
-`make install` also copies `metadata/` (`metadata.json`, `icon32.png`, `icon64.png`) to
-`/int/apps/nl.tanmatsu.sdr-dv/` on the device, which is where the launcher takes the name and the
+`make install` also copies `metadata/` (`metadata.json`, `icon16.png`, `icon32.png`, `icon64.png`) to
+`/int/apps/com.github.n0p.sdr-dv/` on the device, which is where the launcher takes the name and the
 icon of the app from. The icons are made from `icon.png` with `make appicon` (ImageMagick).
 
 ### TETRA voice
