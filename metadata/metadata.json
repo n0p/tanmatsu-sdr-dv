@@ -1,0 +1,20 @@
+{
+    "name": "SDR DMR/TETRA",
+    "description": "RTL-SDR receiver: spectrum and waterfall, NFM / AM / SSB / WFM, DMR and TETRA decoding",
+    "categories": ["Radio"],
+    "version": "0.1.0",
+    "icon": {
+        "32x32": "icon32.png",
+        "64x64": "icon64.png"
+    },
+    "author": "n0p",
+    "license_type": "AGPL-3.0-only",
+    "application": [
+        {
+            "targets": ["tanmatsu"],
+            "revision": 1,
+            "type": "appfs",
+            "executable": "application.bin"
+        }
+    ]
+}
