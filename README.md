@@ -45,6 +45,10 @@ Settings (frequency, mode, gain, ppm, squelch, timeslot selection, step, memory 
 format, SDS log) are kept in NVS. Letter keys work in either case. The bottom line of the screen names the
 keys that matter at the moment.
 
+The battery level is at the right end of the top bar, next to the volume: a percentage that goes
+from red (empty) through yellow to green (full). It is worked out from the battery voltage, so it
+reads high while the Tanmatsu is charging.
+
 ### Settings
 
 F2 opens the settings in the lower part of the screen, in three columns; the spectrum stays

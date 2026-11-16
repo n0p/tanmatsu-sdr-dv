@@ -914,6 +914,7 @@ void app_main(void) {
     for (;;) {
         int64_t t0 = esp_timer_get_time();
         handle_input();
+        battery_update();
         ui_frame();
         leds_update();
         if (settings_dirty && esp_timer_get_time() - settings_dirty_at > 3000000) settings_save();

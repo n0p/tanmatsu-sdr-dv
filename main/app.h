@@ -343,6 +343,18 @@ extern led_status_t g_led;
 void leds_init(void);    // hands the other LEDs back to the keyboard controller, A and B dark
 void leds_update(void);  // every frame; does something four times a second
 void leds_off(void);
+
+// ---- Battery level (battery.c) -------------------------------------------------------------------
+typedef struct {
+    volatile int      pct;       // 0..100, smoothed; -1: no battery or no reading
+    volatile bool     present;   // a battery is installed and was read
+    volatile bool     charging;
+    volatile bool     usb;       // a power supply is attached
+    volatile uint16_t mv;        // battery voltage of the last reading
+    volatile int      err;       // result of the last reading
+} battery_status_t;
+extern battery_status_t g_bat;
+void battery_update(void);  // every frame; reads the battery every five seconds
 extern volatile float g_ui_fps;
 extern volatile int   g_step_idx;
 

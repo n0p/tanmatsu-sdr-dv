@@ -12,6 +12,7 @@ idf_component_register(
 		"recfmt.c"
 		"rec.c"
 		"leds.c"
+		"battery.c"
 		"msglog.c"
 		"shot.c"
 	PRIV_REQUIRES

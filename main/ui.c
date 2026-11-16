@@ -456,10 +456,46 @@ static const char* step_name(uint32_t hz, char* buf, size_t len) {
     return buf;
 }
 
+// The battery at the right end of the top bar: a small cell filled to the level, the percentage
+// under it, both red when empty, through yellow, to green when full. Without a battery (or a
+// reading) the cell is empty and the text "--".
+#define BAT_RIGHT 799  // right edge of the cell's cap and of the text
+#define BAT_BODY  22
+#define BAT_FILL  (BAT_BODY - 4)
+
+static pax_col_t battery_colour(int pct) {
+    float t = (float)pct / 100.0f;
+    float r = t < 0.5f ? 1.0f : 2.0f - 2.0f * t;
+    float g = t < 0.5f ? 2.0f * t : 1.0f;
+    return 0xff000040 | ((uint32_t)(0x40 + lroundf(0xbf * r)) << 16) | ((uint32_t)(0x40 + lroundf(0xbf * g)) << 8);
+}
+
+static void draw_battery(pax_buf_t* b, int pct) {
+    const pax_col_t frame = 0xff8090a0;
+    float           x     = BAT_RIGHT - 2 - BAT_BODY;
+    pax_draw_rect(b, frame, x, 3, BAT_BODY, 1);
+    pax_draw_rect(b, frame, x, 11, BAT_BODY, 1);
+    pax_draw_rect(b, frame, x, 3, 1, 9);
+    pax_draw_rect(b, frame, x + BAT_BODY - 1, 3, 1, 9);
+    pax_draw_rect(b, frame, x + BAT_BODY, 6, 2, 3);
+    char txt[16];
+    if (pct < 0) {
+        snprintf(txt, sizeof(txt), "--");
+    } else {
+        // Two pixels at least, so that an almost empty battery still shows its red.
+        int w = (BAT_FILL * pct + 50) / 100;
+        pax_draw_rect(b, battery_colour(pct), x + 2, 5, w < 2 ? 2 : w, 5);
+        snprintf(txt, sizeof(txt), "%d%%", pct);
+    }
+    pax_draw_text(b, pct < 0 ? frame : battery_colour(pct), pax_font_sky_mono, 9, BAT_RIGHT - 7.0f * (float)strlen(txt), 14,
+                  txt);
+}
+
 static void update_top(void) {
     char     freq[32], gain[24], step[16], vol[16], rec[16], key[160];
     uint32_t f    = g_set.freq_hz;
     int      gi   = g_set.gain_idx;
+    int      bat  = g_bat.pct;
     bool     entry = ui_entry_active;
     if (entry) {
         snprintf(freq, sizeof(freq), "> %s_", ui_entry);
@@ -486,26 +522,30 @@ static void update_top(void) {
     else if (rs == REC_STARTING) snprintf(rec, sizeof(rec), "...");
     else if (rsec >= 3600) snprintf(rec, sizeof(rec), "%uh%02u", (unsigned)(rsec / 3600), (unsigned)(rsec / 60 % 60));
     else snprintf(rec, sizeof(rec), "%u:%02u", (unsigned)(rsec / 60), (unsigned)(rsec % 60));
-    snprintf(key, sizeof(key), "%s|%s|%s|%s|%s|%d|%d%s", freq, mode_names[g_set.mode], gain, step, vol, (int)g_set.zoom,
-             (int)(rs != REC_IDLE), rec);
+    snprintf(key, sizeof(key), "%s|%s|%s|%s|%s|%d|%d%s|%d", freq, mode_names[g_set.mode], gain, step, vol, (int)g_set.zoom,
+             (int)(rs != REC_IDLE), rec, bat);
     if (!label_changed(&lbl_top, key)) return;
 
+    // The columns are laid out for the widest text of each: a frequency entry of 11 characters
+    // ends at 300, "TETRA" at 370, "RF 49.6 dB" at 516, "12.50k" at 564, "narrow" at 611, a
+    // recording time at 669, "VOL 100" at 770 and "100%" starts at 771.
     pax_buf_t* b = &lbl_top.buf;
     pax_background(b, PAX_BAR_BG);
     pax_draw_text(b, entry ? 0xffffe060 : 0xffffffff, pax_font_sky_mono, 27, 6, 1, freq);
     if (!entry) pax_draw_text(b, 0xff8090a0, pax_font_sky_mono, 18, 6 + 21 * (float)strlen(freq) + 6, 8, "MHz");
-    pax_draw_text(b, 0xff60ff90, pax_font_sky_mono, 18, 320, 5, mode_names[g_set.mode]);
-    pax_draw_text(b, 0xffc0d0e0, pax_font_sky_mono, 18, 400, 5, gain);
-    pax_draw_text(b, 0xff8090a0, pax_font_sky_mono, 9, 548, 3, "STEP");
-    pax_draw_text(b, 0xffc0d0e0, pax_font_sky_mono, 9, 548, 14, step);
-    pax_draw_text(b, 0xff8090a0, pax_font_sky_mono, 9, 596, 3, "SPAN");
-    pax_draw_text(b, 0xffc0d0e0, pax_font_sky_mono, 9, 596, 14, g_set.zoom ? "narrow" : "wide");
+    pax_draw_text(b, 0xff60ff90, pax_font_sky_mono, 18, 300, 5, mode_names[g_set.mode]);
+    pax_draw_text(b, 0xffc0d0e0, pax_font_sky_mono, 18, 376, 5, gain);
+    pax_draw_text(b, 0xff8090a0, pax_font_sky_mono, 9, 522, 3, "STEP");
+    pax_draw_text(b, 0xffc0d0e0, pax_font_sky_mono, 9, 522, 14, step);
+    pax_draw_text(b, 0xff8090a0, pax_font_sky_mono, 9, 569, 3, "SPAN");
+    pax_draw_text(b, 0xffc0d0e0, pax_font_sky_mono, 9, 569, 14, g_set.zoom ? "narrow" : "wide");
     if (rs != REC_IDLE) {
-        pax_draw_circle(b, 0xffff2020, 649, 14, 8);
-        pax_draw_text(b, 0xffff6050, pax_font_sky_mono, 9, 662, 3, "REC");
-        pax_draw_text(b, 0xffffc0b0, pax_font_sky_mono, 9, 662, 14, rec);
+        pax_draw_circle(b, 0xffff2020, 622, 14, 8);
+        pax_draw_text(b, 0xffff6050, pax_font_sky_mono, 9, 634, 3, "REC");
+        pax_draw_text(b, 0xffffc0b0, pax_font_sky_mono, 9, 634, 14, rec);
     }
-    pax_draw_text(b, g_set.volume > 0 ? 0xffc0d0e0 : 0xffff7060, pax_font_sky_mono, 18, 700, 5, vol);
+    pax_draw_text(b, g_set.volume > 0 ? 0xffc0d0e0 : 0xffff7060, pax_font_sky_mono, 18, 672, 5, vol);
+    draw_battery(b, bat);
     label_done(&lbl_top);
 }
 

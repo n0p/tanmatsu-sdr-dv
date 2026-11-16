@@ -117,6 +117,8 @@ static void cmd_stat(void) {
                esp_timer_get_time() < g_notice_until ? g_notice : "");
     con_printf("#LED a=%06x b=%06x snr=%.1f setting=%d full=%d sends=%u err=%d\n", (unsigned)g_led.a, (unsigned)g_led.b,
                (double)g_led.snr_db, g_led.setting, g_led.full, (unsigned)g_led.sends, g_led.err);
+    con_printf("#BAT pct=%d mv=%u present=%d charging=%d usb=%d err=%d\n", g_bat.pct, (unsigned)g_bat.mv,
+               (int)g_bat.present, (int)g_bat.charging, (int)g_bat.usb, g_bat.err);
     char help[160];
     bool prompt;
     ui_help_text(help, sizeof(help), &prompt);
